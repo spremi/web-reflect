@@ -35,23 +35,77 @@ class ReflectServer(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path.startswith('/favicon'):
+        req_path = parse.urlparse(self.path).path
+
+        #
+        # Request for APIs returning 'success'.
+        #
+        if req_path == '/api/s' or req_path == '/api/s/':
+            self.__ret_success()
+            return
+
+        #
+        # Request for APIs returning 'error'.
+        #
+        if req_path == '/api/e' or req_path == '/api/e/':
+            self.__ret_error(404)
+            return
+
+        if req_path.endswith('favicon.ico'):
             self.__serve_favicon()
             return
 
-        self.__ret_success()
+        if req_path == '/' or req_path == '/index.html':
+            self.__serve_index()
+            return
+
+        if req_path == '/style.css':
+            self.__serve_style()
+            return
+
+        self.__serve_error()
 
     def do_POST(self):
-        self.__get_content()
-        self.__ret_success()
+        req_path = parse.urlparse(self.path).path
+
+        if req_path == '/api/s' or req_path == '/api/s/':
+            self.__get_content()
+            self.__ret_success()
+            return
+
+        if req_path == '/api/e' or req_path == '/api/e/':
+            self.__ret_error(404)
+            return
+
+        self.__ret_error(418)
 
     def do_PUT(self):
-        self.__get_content()
-        self.__ret_success()
+        req_path = parse.urlparse(self.path).path
+
+        if req_path == '/api/s' or req_path == '/api/s/':
+            self.__get_content()
+            self.__ret_success()
+            return
+
+        if req_path == '/api/e' or req_path == '/api/e/':
+            self.__ret_error(404)
+            return
+
+        self.__ret_error(418)
 
     def do_DELETE(self):
-        self.__get_content()
-        self.__ret_success()
+        req_path = parse.urlparse(self.path).path
+
+        if req_path == '/api/s' or req_path == '/api/s/':
+            self.__get_content()
+            self.__ret_success()
+            return
+
+        if req_path == '/api/e' or req_path == '/api/e/':
+            self.__ret_error(404)
+            return
+
+        self.__ret_error(418)
 
     def __serve_favicon(self):
         '''
@@ -62,6 +116,39 @@ class ReflectServer(BaseHTTPRequestHandler):
         self.end_headers()
 
         with open('content/favicon.png', 'rb') as f:
+            self.wfile.write(f.read())
+
+    def __serve_index(self):
+        '''
+        Return index page.
+        '''
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+        with open('content/index.html', 'rb') as f:
+            self.wfile.write(f.read())
+
+    def __serve_style(self):
+        '''
+        Return style sheet.
+        '''
+        self.send_response(200)
+        self.send_header('Content-type', 'text/css')
+        self.end_headers()
+
+        with open('content/style.css', 'rb') as f:
+            self.wfile.write(f.read())
+
+    def __serve_error(self):
+        '''
+        Return error page.
+        '''
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+        with open('content/error.html', 'rb') as f:
             self.wfile.write(f.read())
 
     def __init_response(self):
@@ -130,6 +217,25 @@ class ReflectServer(BaseHTTPRequestHandler):
         #
         # Clear the dictionary contents.
         #
+        if self.__response:
+            self.__response.clear()
+
+    def __ret_error(self, code: int):
+        '''
+        Common function to return error response.
+        '''
+        self.__init_response()
+
+        self.send_response(code)
+
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+
+        resp = json.dumps(self.__response)
+
+        self.wfile.write(resp.encode('utf-8'))
+
+        # Clear the dictionary contents.
         if self.__response:
             self.__response.clear()
 
