@@ -40,12 +40,15 @@ class ReflectServer(BaseHTTPRequestHandler):
         self.__ret_success()
 
     def do_POST(self):
+        self.__get_content()
         self.__ret_success()
 
     def do_PUT(self):
+        self.__get_content()
         self.__ret_success()
 
     def do_DELETE(self):
+        self.__get_content()
         self.__ret_success()
 
     def __serve_favicon(self):
@@ -66,6 +69,23 @@ class ReflectServer(BaseHTTPRequestHandler):
         self.__response['method'] = self.command
         self.__response['from'] = self.address_string()
         self.__response['path'] = self.path
+
+    def __get_content(self):
+        '''
+        Extract content and add to the response.
+        '''
+        content_type = self.headers.get('Content-Type')
+        content_length = self.headers.get('Content-Length')
+        length = int(content_length) if content_length else 0
+
+        content = self.rfile.read(length).decode("utf-8")
+
+        if content_type == 'application/json':
+            payload = json.loads(content)
+        else:
+            payload = content
+
+        self.__response['payload'] = payload
 
     def __get_headers(self):
         '''
