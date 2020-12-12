@@ -8,6 +8,8 @@
 
 from argparse import ArgumentParser
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib import parse
+
 import json
 
 
@@ -68,7 +70,18 @@ class ReflectServer(BaseHTTPRequestHandler):
         '''
         self.__response['method'] = self.command
         self.__response['from'] = self.address_string()
-        self.__response['path'] = self.path
+        self.__response['path'] = parse.urlparse(self.path).path
+
+    def __get_query_params(self):
+        '''
+        Extract query params and add to the response.
+        '''
+        req_query = dict()
+
+        query_params = parse.urlparse(self.path).query
+
+        self.__response['query_string'] = query_params
+        self.__response['query'] = parse.parse_qs(query_params)
 
     def __get_content(self):
         '''
@@ -103,6 +116,7 @@ class ReflectServer(BaseHTTPRequestHandler):
         '''
         self.__init_response()
         self.__get_headers()
+        self.__get_query_params()
 
         self.send_response(200)
 
