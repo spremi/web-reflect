@@ -67,11 +67,22 @@ class ReflectServer(BaseHTTPRequestHandler):
         self.__response['from'] = self.address_string()
         self.__response['path'] = self.path
 
+    def __get_headers(self):
+        '''
+        Extract headers and add to the response.
+        '''
+        req_headers = dict()
+        for n, v in sorted(self.headers.items()):
+            req_headers[n] = v
+
+        self.__response['headers'] = req_headers
+
     def __ret_success(self):
         '''
         Common function to return success response.
         '''
         self.__init_response()
+        self.__get_headers()
 
         self.send_response(200)
 
