@@ -127,6 +127,12 @@ class ReflectServer(BaseHTTPRequestHandler):
 
         self.wfile.write(resp.encode('utf-8'))
 
+        #
+        # Clear the dictionary contents.
+        #
+        if self.__response:
+            self.__response.clear()
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(
