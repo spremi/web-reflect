@@ -8,6 +8,8 @@
 
 from argparse import ArgumentParser
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
+
 
 AllowCors = False
 
@@ -15,6 +17,8 @@ IsDebug = False
 
 
 class ReflectServer(BaseHTTPRequestHandler):
+
+    __response = dict()
 
     def do_OPTIONS(self):
         self.send_response(200, "ok")
@@ -33,16 +37,16 @@ class ReflectServer(BaseHTTPRequestHandler):
             self.__serve_favicon()
             return
 
-        self.__ret_success('')
+        self.__ret_success()
 
     def do_POST(self):
-        self.__ret_success('')
+        self.__ret_success()
 
     def do_PUT(self):
-        self.__ret_success('')
+        self.__ret_success()
 
     def do_DELETE(self):
-        self.__ret_success('')
+        self.__ret_success()
 
     def __serve_favicon(self):
         '''
@@ -55,16 +59,28 @@ class ReflectServer(BaseHTTPRequestHandler):
         with open('content/favicon.png', 'rb') as f:
             self.wfile.write(f.read())
 
-    def __ret_success(self, arg: str):
+    def __init_response(self):
+        '''
+        Initialize attributes of the response.
+        '''
+        self.__response['method'] = self.command
+        self.__response['from'] = self.address_string()
+        self.__response['path'] = self.path
+
+    def __ret_success(self):
         '''
         Common function to return success response.
         '''
+        self.__init_response()
+
         self.send_response(200)
 
-        self.send_header('Content-Type', 'text/plain; charset=utf-8')
+        self.send_header('Content-Type', 'application/json')
         self.end_headers()
 
-        self.wfile.write(arg.encode('utf-8'))
+        resp = json.dumps(self.__response)
+
+        self.wfile.write(resp.encode('utf-8'))
 
 
 if __name__ == '__main__':
