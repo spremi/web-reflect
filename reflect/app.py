@@ -29,6 +29,10 @@ class ReflectServer(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        if self.path.startswith('/favicon'):
+            self.__serve_favicon()
+            return
+
         self.__ret_success('')
 
     def do_POST(self):
@@ -39,6 +43,17 @@ class ReflectServer(BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         self.__ret_success('')
+
+    def __serve_favicon(self):
+        '''
+        Return favicon.
+        '''
+        self.send_response(200)
+        self.send_header('Content-type', 'image/x-icon')
+        self.end_headers()
+
+        with open('content/favicon.png', 'rb') as f:
+            self.wfile.write(f.read())
 
     def __ret_success(self, arg: str):
         '''
