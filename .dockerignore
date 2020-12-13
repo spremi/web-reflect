@@ -1,0 +1,9 @@
+#
+# web-reflect
+#
+# Copyright (c) 2020, Sanjeev Premi.
+#
+
+.git/
+scripts/
+ghdoc/
